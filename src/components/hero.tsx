@@ -16,14 +16,23 @@ const Hero = forwardRef<HTMLElement>((props, ref) => {
   const gridRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const auroraRef = useRef<HTMLDivElement>(null);
+  const codeBlockRef = useRef<HTMLDivElement>(null);
+  const techCardsRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isLowEndDevice, setIsLowEndDevice] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [layoutChanged, setLayoutChanged] = useState(false);
   
   useEffect(() => {
     const checkMobile = () => {
+      const wasMobile = isMobile;
       const mobile = window.innerWidth < 768;
+      
       setIsMobile(mobile);
+      
+      if (wasMobile !== mobile) {
+        setLayoutChanged(true);
+      }
       
       if (mobile) {
         const isLowPerformance = 
@@ -39,7 +48,7 @@ const Hero = forwardRef<HTMLElement>((props, ref) => {
     window.addEventListener("resize", checkMobile, { passive: true });
     
     return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  }, [isMobile]);
   
   useEffect(() => {
     if (isLoaded && canvasRef.current && !isMobile) {
@@ -204,64 +213,98 @@ const Hero = forwardRef<HTMLElement>((props, ref) => {
           }
         }
         
-        const techIcons = document.querySelectorAll(".tech-icon");
-        
-        if (isMobile && isLowEndDevice) {
-          gsap.to(techIcons, {
-            opacity: 1,
-            duration: 0.5,
-            stagger: 0.05
-          });
-        } else {
-          techIcons.forEach((icon, i) => {
-            gsap.fromTo(
-              icon,
-              { scale: isMobile ? 0.9 : 0, opacity: 0 },
-              {
-                scale: 1,
-                opacity: 1,
-                duration: isMobile ? 0.3 : 0.5,
-                delay: isMobile ? 0.1 + (i * 0.05) : 0.2 + (i * 0.1),
-                ease: isMobile ? "power1.out" : "back.out(1.7)"
-              }
-            );
-            
-            if (!isMobile) {
-              gsap.to(icon, {
-                y: `${(Math.random() - 0.5) * 10}px`,
-                x: `${(Math.random() - 0.5) * 10}px`,
-                rotation: `${(Math.random() - 0.5) * 10}deg`,
-                duration: 2 + Math.random() * 2,
-                repeat: -1,
-                yoyo: true,
-                ease: "sine.inOut",
-                delay: Math.random()
-              });
-            }
-          });
-        }
-        
-        if (!isMobile) {
-          const codeBlocks = document.querySelectorAll(".code-block");
-          codeBlocks.forEach((block, i) => {
-            gsap.fromTo(
-              block,
-              { y: 20, opacity: 0 },
-              {
-                y: 0,
-                opacity: 0.7,
-                duration: 0.8,
-                delay: 1 + (i * 0.2),
-                ease: "power2.out"
-              }
-            );
-          });
+        const codeBlocks = document.querySelectorAll(".code-block");
+        if (codeBlocks.length > 0) {
+          if (isMobile) {
+            gsap.set(codeBlocks, { display: "none" });
+          } else {
+            gsap.set(codeBlocks, { display: "block" });
+            codeBlocks.forEach((block, i) => {
+              gsap.fromTo(
+                block,
+                { y: 20, opacity: 0 },
+                {
+                  y: 0,
+                  opacity: 0.7,
+                  duration: 0.8,
+                  delay: 0.5 + (i * 0.2),
+                  ease: "power2.out"
+                }
+              );
+            });
+          }
         }
       });
       
+      if (layoutChanged) {
+        setLayoutChanged(false);
+        
+        if (!isMobile && codeBlockRef.current) {
+          gsap.set(codeBlockRef.current, { display: "block", opacity: 0 });
+          gsap.to(codeBlockRef.current, { opacity: 1, duration: 0.5 });
+          
+          const codeBlocks = document.querySelectorAll(".code-block");
+          codeBlocks.forEach((block) => {
+            gsap.fromTo(
+              block,
+              { y: 20, opacity: 0 },
+              { y: 0, opacity: 0.7, duration: 0.8, ease: "power2.out" }
+            );
+          });
+        }
+      }
+      
       return () => ctx.revert();
     }
-  }, [isMobile, isLowEndDevice]);
+  }, [isMobile, isLowEndDevice, layoutChanged]);
+
+  useEffect(() => {
+    if (techCardsRef.current) {
+      const techIcons = techCardsRef.current.querySelectorAll(".tech-icon");
+      
+      gsap.set(techIcons, { clearProps: "all" });
+      
+      if (isMobile && isLowEndDevice) {
+        gsap.to(techIcons, {
+          opacity: 1,
+          scale: 1,
+          duration: 0.5,
+          stagger: 0.05,
+          ease: "power1.out"
+        });
+      } else {
+        techIcons.forEach((icon, i) => {
+          gsap.fromTo(
+            icon,
+            { 
+              scale: isMobile ? 0.9 : 0.8, 
+              opacity: 0.5 
+            },
+            {
+              scale: 1,
+              opacity: 1,
+              duration: isMobile ? 0.3 : 0.5,
+              delay: isMobile ? 0.1 + (i * 0.05) : 0.2 + (i * 0.1),
+              ease: isMobile ? "power1.out" : "back.out(1.7)"
+            }
+          );
+          
+          if (!isMobile) {
+            gsap.to(icon, {
+              y: `${(Math.random() - 0.5) * 8}px`,
+              x: `${(Math.random() - 0.5) * 8}px`,
+              rotation: `${(Math.random() - 0.5) * 6}deg`,
+              duration: 2 + Math.random() * 2,
+              repeat: -1,
+              yoyo: true,
+              ease: "sine.inOut",
+              delay: Math.random()
+            });
+          }
+        });
+      }
+    }
+  }, [isMobile, isLowEndDevice, layoutChanged, isLoaded]);
 
   return (
     <motion.section
@@ -291,7 +334,7 @@ const Hero = forwardRef<HTMLElement>((props, ref) => {
         ) : (
           <>
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/15 via-transparent to-indigo-500/15 opacity-60 blur-3xl"></div>
-            <div className={`absolute -inset-[${isMobile ? '50%' : '100%'}] bg-[conic-gradient(from_180deg_at_50%_70%,_var(--tw-gradient-stops))] from-blue-500/20 via-primary/15 to-purple-500/20 opacity-40 blur-3xl ${isMobile ? '' : 'animate-aurora'}`}></div>
+            <div className="absolute -inset-[50%] bg-[conic-gradient(from_180deg_at_50%_70%,_var(--tw-gradient-stops))] from-blue-500/20 via-primary/15 to-purple-500/20 opacity-40 blur-3xl animate-aurora"></div>
           </>
         )}
         
@@ -308,7 +351,7 @@ const Hero = forwardRef<HTMLElement>((props, ref) => {
         )}
         
         {!isLowEndDevice && (
-          <div className={`absolute inset-0 bg-[linear-gradient(to_right,transparent,rgba(77,156,234,${isMobile ? '0.02' : '0.05'}),transparent)] ${isMobile ? '' : 'animate-shimmer'}`}></div>
+          <div className={`absolute inset-0 bg-[linear-gradient(to_right,transparent,rgba(77,156,234,${isMobile ? '0.02' : '0.05'}),transparent)] animate-shimmer`}></div>
         )}
       </div>
 
@@ -351,7 +394,7 @@ const Hero = forwardRef<HTMLElement>((props, ref) => {
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4"
             style={{ willChange: 'transform, opacity' }}
           >
-            <span className={`text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-500 to-primary ${isMobile && isLowEndDevice ? '' : 'bg-[length:200%_auto] animate-gradient'}`}>
+            <span className={`text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-500 to-primary bg-[length:200%_auto] animate-gradient`}>
               Dimas Bagus Prayogo
             </span>
           </motion.h1>
@@ -366,26 +409,29 @@ const Hero = forwardRef<HTMLElement>((props, ref) => {
             Fullstack Developer
           </motion.h2>
         
-          {!isMobile && (
-            <motion.p
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="text-muted-foreground max-w-lg mb-8 text-base leading-relaxed"
-            >
-              Crafting responsive, user-friendly web applications using modern technologies.
-              Passionate about clean code and innovative solutions.
-            </motion.p>
-          )}
+          <motion.p
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: isMobile ? 0 : 1 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="text-muted-foreground max-w-lg mb-8 text-base leading-relaxed hidden md:block"
+          >
+            Crafting responsive, user-friendly web applications using modern technologies.
+            Passionate about clean code and innovative solutions.
+          </motion.p>
           
           <motion.div 
-            initial={{ y: isMobile ? 10 : 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: isMobile ? 0.3 : 0.5, delay: isMobile ? 0.3 : 0.6 }}
+            ref={techCardsRef}
             className="flex flex-wrap gap-2.5 md:gap-3.5 mb-8 md:mb-10 justify-center md:justify-start"
           >
             {["TypeScript", "React", "Next.js", "Node.js", "Tailwind"].map((tech, i) => (
-              <div key={tech} className="tech-icon p-2 md:p-2.5 bg-secondary/30 backdrop-blur-sm rounded-lg border border-border/30" style={{ opacity: 0 }}>
+              <div 
+                key={tech} 
+                className="tech-icon p-2 md:p-2.5 bg-secondary/30 backdrop-blur-sm rounded-lg border border-border/30"
+                style={{ 
+                  opacity: 1,
+                  visibility: "visible" 
+                }}
+              >
                 <span className="text-xs md:text-sm font-medium">{tech}</span>
               </div>
             ))}
@@ -418,37 +464,38 @@ const Hero = forwardRef<HTMLElement>((props, ref) => {
           </motion.div>
         </div>
         
-        {!isMobile && (
-          <div className="w-full md:w-2/5 relative md:flex items-center justify-end pl-0 md:pl-4 lg:pl-6">
-            <div className="absolute top-0 left-0 w-full h-full z-0">
-              <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-10 h-10 rounded-full bg-primary/10 blur-xl"></div>
-              <div className="absolute right-10 top-10 w-20 h-20 rounded-full bg-blue-500/10 blur-xl"></div>
-            </div>
-            
-            <div className="space-y-5 w-full backdrop-blur-sm relative z-10 p-2">
-              <div className="code-block bg-secondary/20 border border-border rounded-md p-5 text-sm font-mono relative">
-                <div className="flex items-center gap-2.5 text-muted-foreground">
-                  <Terminal className="h-4 w-4 text-primary" />
-                  <span className="text-xs">dprayogo.dev</span>
-                </div>
-                <div className="mt-4 text-muted-foreground">
-                  <div><span className="text-blue-400">#include</span> <span className="text-yellow-300">&lt;windows.h&gt;</span></div>
-                  <div><span className="text-blue-400">#include</span> <span className="text-yellow-300">&lt;developer.h&gt;</span></div>
-                  <div className="mt-1.5"><span className="text-green-400">HANDLE</span> <span className="text-purple-400">InitDeveloper</span>(<span className="text-green-400">LPCTSTR</span> name) &#123;</div>
-                  <div>&nbsp;&nbsp;<span className="text-blue-400">SECURITY_ATTRIBUTES</span> sa;</div>
-                  <div>&nbsp;&nbsp;sa.<span className="text-green-400">bInheritHandle</span> = <span className="text-yellow-300">TRUE</span>;</div>
-                  <div>&nbsp;&nbsp;sa.<span className="text-green-400">lpSecurityDescriptor</span> = <span className="text-yellow-300">NULL</span>;</div>
-                  <div className="mt-1.5">&nbsp;&nbsp;<span className="text-green-400">return</span> <span className="text-purple-400">CreateDeveloper</span>(</div>
-                  <div>&nbsp;&nbsp;&nbsp;&nbsp;name,</div>
-                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-purple-400">SKILLS_FULLSTACK</span> | <span className="text-purple-400">SKILLS_FRONTEND</span> | <span className="text-purple-400">SKILLS_BACKEND</span>,</div>
-                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-purple-400">0xDEADBEEF</span>, <span className="text-yellow-300">&amp;sa</span></div>
-                  <div>&nbsp;&nbsp;);</div>
-                  <div>&#125;</div>
-                </div>
+        <div 
+          ref={codeBlockRef}
+          className={`w-full md:w-2/5 relative md:flex items-center justify-end pl-0 md:pl-4 lg:pl-6 ${isMobile ? 'hidden' : 'block'}`}
+        >
+          <div className="absolute top-0 left-0 w-full h-full z-0">
+            <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-10 h-10 rounded-full bg-primary/10 blur-xl"></div>
+            <div className="absolute right-10 top-10 w-20 h-20 rounded-full bg-blue-500/10 blur-xl"></div>
+          </div>
+          
+          <div className="space-y-5 w-full backdrop-blur-sm relative z-10 p-2">
+            <div className="code-block bg-secondary/20 border border-border rounded-md p-5 text-sm font-mono relative">
+              <div className="flex items-center gap-2.5 text-muted-foreground">
+                <Terminal className="h-4 w-4 text-primary" />
+                <span className="text-xs">dprayogo.dev</span>
+              </div>
+              <div className="mt-4 text-muted-foreground">
+                <div><span className="text-blue-400">#include</span> <span className="text-yellow-300">&lt;windows.h&gt;</span></div>
+                <div><span className="text-blue-400">#include</span> <span className="text-yellow-300">&lt;developer.h&gt;</span></div>
+                <div className="mt-1.5"><span className="text-green-400">HANDLE</span> <span className="text-purple-400">InitDeveloper</span>(<span className="text-green-400">LPCTSTR</span> name) &#123;</div>
+                <div>&nbsp;&nbsp;<span className="text-blue-400">SECURITY_ATTRIBUTES</span> sa;</div>
+                <div>&nbsp;&nbsp;sa.<span className="text-green-400">bInheritHandle</span> = <span className="text-yellow-300">TRUE</span>;</div>
+                <div>&nbsp;&nbsp;sa.<span className="text-green-400">lpSecurityDescriptor</span> = <span className="text-yellow-300">NULL</span>;</div>
+                <div className="mt-1.5">&nbsp;&nbsp;<span className="text-green-400">return</span> <span className="text-purple-400">CreateDeveloper</span>(</div>
+                <div>&nbsp;&nbsp;&nbsp;&nbsp;name,</div>
+                <div>&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-purple-400">SKILLS_FULLSTACK</span> | <span className="text-purple-400">SKILLS_FRONTEND</span> | <span className="text-purple-400">SKILLS_BACKEND</span>,</div>
+                <div>&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-purple-400">0xDEADBEEF</span>, <span className="text-yellow-300">&amp;sa</span></div>
+                <div>&nbsp;&nbsp;);</div>
+                <div>&#125;</div>
               </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
       <div className="absolute bottom-6 md:bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce z-20">
         <div className="flex flex-col items-center">
@@ -528,6 +575,34 @@ const Hero = forwardRef<HTMLElement>((props, ref) => {
         }
         
         @media (max-width: 767px) {
+          .animate-bounce {
+            animation-duration: 2s;
+          }
+          
+          .animate-pulse {
+            animation-duration: 2s;
+          }
+        }
+        
+        @media (min-width: 768px) {
+          .code-block {
+            transition: opacity 0.3s ease;
+          }
+          
+          .tech-icon {
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s;
+            opacity: 1 !important;
+            visibility: visible !important;
+          }
+        }
+        
+        @media (max-width: 767px) {
+          .tech-icon {
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s;
+            opacity: 1 !important;
+            visibility: visible !important;
+          }
+          
           .animate-bounce {
             animation-duration: 2s;
           }

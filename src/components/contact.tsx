@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Mail, Github, Linkedin, Twitter } from "lucide-react";
@@ -13,11 +13,71 @@ const Contact: React.FC = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
   const linesRef = useRef<HTMLDivElement>(null);
+  const circuitRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [prevMobile, setPrevMobile] = useState<boolean | null>(null);
+  const [contentVisible, setContentVisible] = useState(false);
+  const [layoutChanged, setLayoutChanged] = useState(false);
+  
+  // Check for mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      const wasMobile = isMobile;
+      const mobile = window.innerWidth < 768;
+      
+      // Detect layout changes
+      if (wasMobile !== mobile && prevMobile !== null) {
+        setLayoutChanged(true);
+      }
+      
+      setPrevMobile(mobile);
+      setIsMobile(mobile);
+    };
+    
+    checkMobile();
+    window.addEventListener("resize", checkMobile, { passive: true });
+    
+    return () => window.removeEventListener("resize", checkMobile);
+  }, [isMobile, prevMobile]);
+  
+  // Handle layout changes
+  useEffect(() => {
+    if (layoutChanged && contentVisible) {
+      // Ensure terminal is visible after layout change
+      if (terminalRef.current) {
+        gsap.set(terminalRef.current, { opacity: 1, y: 0 });
+        
+        // Also ensure terminal lines are visible
+        if (linesRef.current) {
+          const lines = linesRef.current.querySelectorAll(".terminal-line");
+          gsap.set(lines, { width: "100%", opacity: 1 });
+        }
+      }
+      
+      // Ensure circuit board elements remain visible
+      if (circuitRef.current) {
+        const circuitLines = circuitRef.current.querySelectorAll(".circuit-line");
+        const dots = circuitRef.current.querySelectorAll(".connection-dot");
+        
+        gsap.set(circuitLines, { 
+          opacity: (index) => index % 2 === 0 ? 0.5 : 0.4,
+          strokeDashoffset: 0 
+        });
+        
+        gsap.set(dots, { 
+          opacity: 0.4,
+          scale: 1
+        });
+      }
+      
+      setLayoutChanged(false);
+    }
+  }, [layoutChanged, contentVisible]);
   
   useEffect(() => {
     // Wait for a short timeout to ensure DOM is fully rendered
     const timer = setTimeout(() => {
-      if (sectionRef.current && terminalRef.current && linesRef.current) {
+      if (sectionRef.current && terminalRef.current && linesRef.current && circuitRef.current) {
         const ctx = gsap.context(() => {
           // Animate the circuit board elements first
           // Circuit board fade in
@@ -93,6 +153,9 @@ const Contact: React.FC = () => {
                 trigger: sectionRef.current,
                 start: "top 70%",
                 once: true
+              },
+              onComplete: () => {
+                setContentVisible(true); // Mark content as visible after animation
               }
             }
           );
@@ -134,8 +197,33 @@ const Contact: React.FC = () => {
       ref={sectionRef}
       className="h-screen flex flex-col relative px-6 py-24 overflow-hidden"
     >
+      {/* Ensure terminal and circuit board stay visible on viewport changes */}
+      <style jsx global>{`
+        @media (min-width: 100px) {
+          .contact-terminal {
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+            transition: box-shadow 0.3s ease !important;
+          }
+          
+          .terminal-line {
+            width: 100% !important;
+            opacity: 1 !important;
+          }
+          
+          .circuit-line {
+            opacity: 0.5 !important;
+            stroke-dashoffset: 0 !important;
+          }
+          
+          .connection-dot {
+            opacity: 0.4 !important;
+          }
+        }
+      `}</style>
+      
       {/* Circuit board background */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
+      <div ref={circuitRef} className="absolute inset-0 z-0 pointer-events-none circuit-board">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <g stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.3">
             {/* Horizontal lines */}
@@ -170,19 +258,19 @@ const Contact: React.FC = () => {
       
       <div className="container mx-auto flex flex-col items-center justify-center h-full z-10">
         <motion.h2 
-          className="text-4xl md:text-5xl font-bold mb-8 text-center"
+          className="mb-8 text-center font-mono text-3xl font-bold uppercase tracking-widest text-primary md:mb-10"
           initial={{ y: -20, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true, margin: "-100px" }}
         >
-          What's Next?
+          // Contact_
         </motion.h2>
         
-        {/* Terminal window - initially hidden */}
+        {/* Terminal window - initially hidden but ensured visible on viewport changes */}
         <div 
           ref={terminalRef}
-          className="w-full max-w-xl bg-secondary/30 backdrop-blur-sm rounded-lg border border-border overflow-hidden mb-12 opacity-0"
+          className="contact-terminal w-full max-w-xl bg-secondary/30 backdrop-blur-sm rounded-lg border border-border overflow-hidden mb-12 opacity-0"
         >
           <div className="h-8 bg-secondary/50 border-b border-border flex items-center px-4">
             <div className="w-3 h-3 rounded-full bg-destructive/60 mr-2"></div>

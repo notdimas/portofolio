@@ -21,15 +21,25 @@ const About = forwardRef<HTMLElement>((props, ref) => {
   const [sectionInView, setSectionInView] = useState(false);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [previousMobile, setPreviousMobile] = useState<boolean | null>(null);
   const [isLowEndDevice, setIsLowEndDevice] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [currentCursorElement, setCurrentCursorElement] = useState<string | null>(null);
+  const [contentRendered, setContentRendered] = useState(false);
+  const [layoutChanged, setLayoutChanged] = useState(false);
   
   // Enhanced check for mobile device and performance capabilities
   useEffect(() => {
     // Check if device is mobile based on screen width
     const checkMobile = () => {
+      const wasMobile = isMobile;
       const mobile = window.innerWidth < 768;
+      
+      if (wasMobile !== mobile && previousMobile !== null) {
+        setLayoutChanged(true);
+      }
+      
+      setPreviousMobile(mobile);
       setIsMobile(mobile);
       
       // Check for low-end devices on mobile
@@ -52,7 +62,7 @@ const About = forwardRef<HTMLElement>((props, ref) => {
     window.addEventListener("resize", checkMobile, { passive: true });
     
     return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  }, [isMobile, previousMobile]);
   
   useEffect(() => {
     if (sectionRef.current) {
@@ -77,9 +87,35 @@ const About = forwardRef<HTMLElement>((props, ref) => {
     position: 'relative' as const
   };
   
+  // Function to show all content immediately without animations
+  const showAllContentImmediately = () => {
+    if (textContainerRef.current) {
+      const contentElements = textContainerRef.current.querySelectorAll("p, pre, #code-container");
+      contentElements.forEach(el => {
+        gsap.to(el, { opacity: 1, duration: 0.2 });
+      });
+      setContentRendered(true);
+      setIsTyping(false);
+      setCurrentCursorElement(null);
+    }
+  };
+  
+  // Handle layout changes
+  useEffect(() => {
+    if (layoutChanged && contentRendered) {
+      // When layout changes and content was previously rendered,
+      // ensure content remains visible without restarting animations
+      showAllContentImmediately();
+      setLayoutChanged(false);
+    }
+  }, [layoutChanged, contentRendered]);
+  
   // Optimized text animation effect
   useEffect(() => {
     if (sectionRef.current && textContainerRef.current && sectionInView) {
+      // Don't re-animate if content is already rendered during layout changes
+      if (contentRendered && !layoutChanged) return;
+      
       // All content elements that should be animated
       const contentElements = [
         { id: "gen-p1", el: textContainerRef.current.querySelector("#gen-p1") as HTMLElement, speed: 300, variance: 0.3 },
@@ -90,40 +126,31 @@ const About = forwardRef<HTMLElement>((props, ref) => {
         { id: "gen-p4", el: textContainerRef.current.querySelector("#gen-p4") as HTMLElement, speed: 330, variance: 0.3 }
       ].filter(item => item.el !== null);
       
-      // Hide all elements initially
-      contentElements.forEach(item => {
-        gsap.set(item.el, { opacity: 0 });
-      });
-      
-      // Simplified static display for mobile - keep appearance but skip animations
-      if (isMobile || isReducedMotion || isLowEndDevice) {
-        // For mobile, just fade in the elements in sequence without typing effect
+      // Simplified static display for mobile or if layout just changed
+      if (isMobile || isReducedMotion || isLowEndDevice || layoutChanged) {
+        // For mobile, just fade in the elements without typing effect
         contentElements.forEach((item, index) => {
-          // Make sure container is visible before its content
           if (item.id === "code-container") {
             gsap.to(item.el, {
               opacity: 1,
               duration: 0.2,
-              delay: 0.3
-            });
-          } else if (item.id === "gen-code") {
-            gsap.to(item.el, {
-              opacity: 1,
-              duration: 0.2,
-              delay: 0.4
+              delay: 0.1
             });
           } else {
             gsap.to(item.el, {
               opacity: 1,
               duration: 0.2,
-              delay: index * 0.1 + 0.2
+              delay: index * 0.05 + 0.1
             });
           }
         });
+        
+        setContentRendered(true);
+        setIsTyping(false);
         return;
       }
       
-      // For desktop - store original content and clear elements
+      // For desktop with animations - store original content and clear elements
       const originalContents = contentElements.map(item => {
         const content = item.el.innerHTML;
         if (item.type !== "container") {
@@ -190,7 +217,6 @@ const About = forwardRef<HTMLElement>((props, ref) => {
         const typeBatch = () => {
           if (charIndex < plainText.length) {
             // Calculate a batch size that varies based on the content being rendered
-            // Code needs smaller batches, text can have larger batches
             let batchSize = Math.max(1, Math.floor(speed / 100)); // Base batch size on speed
             
             // Add variance so it's not perfectly consistent (feels more natural)
@@ -209,7 +235,7 @@ const About = forwardRef<HTMLElement>((props, ref) => {
             // Set cursor element
             setCurrentCursorElement(element.id);
             
-            // Variable delay for natural feel - faster toward middle, slower at beginning and end
+            // Variable delay for natural feel
             const progressFactor = charIndex / plainText.length;
             const speedFactor = progressFactor < 0.2 ? 
               1.2 - progressFactor : // Slightly slower at start
@@ -268,12 +294,21 @@ const About = forwardRef<HTMLElement>((props, ref) => {
         // Done typing all elements
         setIsTyping(false);
         setCurrentCursorElement(null);
+        setContentRendered(true);
       };
       
       // Start animation
       animateElements();
+      
+      // Cleanup function
+      return () => {
+        // If animation is interrupted, ensure content is still visible
+        if (isTyping) {
+          showAllContentImmediately();
+        }
+      };
     }
-  }, [sectionInView, isMobile, isReducedMotion, isLowEndDevice]);
+  }, [sectionInView, isMobile, isReducedMotion, isLowEndDevice, layoutChanged, contentRendered]);
   
   // Optimized grid and decorative animations
   useEffect(() => {
@@ -425,6 +460,22 @@ const About = forwardRef<HTMLElement>((props, ref) => {
         .animate-blink {
           animation: blink 0.7s infinite;
         }
+        
+        /* Content visibility protection */
+        #gen-p1, #gen-p2, #gen-p3, #gen-p4, #gen-code, #code-container {
+          transition: opacity 0.2s ease;
+          min-height: 1.5em;
+        }
+        
+        /* Ensure content remains visible when screen size changes */
+        @media (max-width: 767px) {
+          .section-text-content p,
+          .section-text-content pre,
+          .section-text-content #code-container {
+            opacity: 1 !important;
+            visibility: visible !important;
+          }
+        }
       `}</style>
       
       {/* Grid background - Keep grid but optimize rendering */}
@@ -548,7 +599,7 @@ const About = forwardRef<HTMLElement>((props, ref) => {
           {/* Right column with text content */}
           <div 
             ref={textContainerRef}
-            className="lg:col-span-3 relative"
+            className="lg:col-span-3 relative section-text-content"
           >
             {/* Decorative element - simplified blur on mobile */}
             <div className={`absolute -top-10 -right-10 w-[150px] h-[150px] ${isMobile ? 'blur-[40px]' : 'blur-[80px]'} rounded-full bg-primary/20 pointer-events-none`}></div>
