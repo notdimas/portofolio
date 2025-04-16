@@ -12,6 +12,13 @@ const Loader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const loaderRef = useRef<HTMLDivElement>(null);
   const hasLoadedRef = useRef(false);
   
+  // Check if should skip loader from sessionStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.sessionStorage?.getItem('app-loaded')) {
+      setLoading(false);
+    }
+  }, []);
+  
   // Check if device is mobile
   useEffect(() => {
     const checkMobile = () => {
@@ -26,6 +33,9 @@ const Loader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   
   // Loading animation
   useEffect(() => {
+    // If already loaded from session storage, skip animation completely
+    if (!loading) return;
+
     // If already shown once during development double-render, skip
     if (hasLoadedRef.current) {
       setLoading(false);
@@ -45,10 +55,20 @@ const Loader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 opacity: 0,
                 y: -20,
                 duration: 0.5,
-                onComplete: () => setLoading(false)
+                onComplete: () => {
+                  setLoading(false);
+                  // Set flag in session storage when loader completes
+                  if (typeof window !== 'undefined') {
+                    window.sessionStorage?.setItem('app-loaded', 'true');
+                  }
+                }
               });
             } else {
               setLoading(false);
+              // Set flag in session storage when loader completes
+              if (typeof window !== 'undefined') {
+                window.sessionStorage?.setItem('app-loaded', 'true');
+              }
             }
           }, 500);
           return 100;
@@ -72,17 +92,7 @@ const Loader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const interval = setInterval(updateProgress, 50);
     
     return () => clearInterval(interval);
-  }, []);
-
-  // Skip the loader in development mode after first load
-  if (!loading && typeof window !== 'undefined' && window.sessionStorage?.getItem('app-loaded')) {
-    return <>{children}</>;
-  }
-  
-  // Set flag in session storage when loader completes
-  if (!loading && typeof window !== 'undefined') {
-    window.sessionStorage?.setItem('app-loaded', 'true');
-  }
+  }, [loading]);
 
   return (
     <>
