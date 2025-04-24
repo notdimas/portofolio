@@ -30,13 +30,23 @@ const projects: Project[] = [
     description: "A nice-looking personal portfolio website, built using Next.js and TypeScript for a fast and scalable architecture. It features smooth page transitions and an overall interactive user experience. Designed to reflect both professionalism and aesthetics in one platform.",
     image: "/images/projects/project1_project.png",
     technologies: ["Next.js", "TypeScript", "Tailwind CSS", "Framer Motion", "GSAP"],
-    status: ["public", "live"],
+    status: ["public"],
     type: "Featured Project",
-    link: "https://github.com/SFINXVC/portofolio",
-    live: "https://your-portfolio-demo.com"
+    link: "https://github.com/notdimas/portofolio",
+    live: ""
   },
   {
     id: "project2",
+    title: "MiiStore",
+    description: "A freelance project developed for a client — MiiStore is a fully automated game top-up website built with Laravel 11, featuring a full admin dashboard, integrated payment gateway, item stock management, and a user-friendly interface to streamline digital product transactions.",
+    image: "/images/projects/project3_project.png",
+    technologies: ["PHP", "Laravel", "MySQL", "JavaScript", "Payment Gateway"],
+    status: ["private", "live"],
+    type: "Freelance Project",
+    live: "https://miistore.id"
+  },  
+  {
+    id: "project3",
     title: "SimpleNotepad",
     description: "SimpleNotepad is a minimalist reimplementation of the classic Windows Notepad, built entirely in C. It was created as a fun side project to explore low-level GUI programming on Windows. The project uses CMake as its build system.",
     image: "/images/projects/project2_project.png",
@@ -45,16 +55,6 @@ const projects: Project[] = [
     type: "Featured Project",
     link: "https://github.com/SFINXVC/SimpleNotepad",
   },
-  {
-    id: "project3",
-    title: "MiiStore",
-    description: "A freelance project developed for a client — MiiStore is a game top-up website built with Laravel 11, featuring a full admin dashboard, integrated payment gateway, and a user-friendly interface to streamline digital product transactions.",
-    image: "/images/projects/project3_project.png",
-    technologies: ["PHP", "Laravel", "MySQL", "JavaScript", "Payment Gateway"],
-    status: ["private", "live"],
-    type: "Freelance Project",
-    live: "https://miistore.id"
-  },  
   {
     "id": "project4",
     "title": "FL-RPC",

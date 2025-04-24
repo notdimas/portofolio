@@ -33,9 +33,30 @@ const techStack = [
     purpose: "Next.js is my go-to React framework for building performant websites with server-side rendering, static generation, and API routes."
   },
   {
+    id: "php",
+    name: "PHP",
+    icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg",
+    color: "#777BB4",
+    purpose: "I use PHP for server-side scripting and developing dynamic web applications with a focus on rapid development and flexibility."
+  },
+  {
+    id: "laravel",
+    name: "Laravel",
+    icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/laravel/laravel-original.svg",
+    color: "#FF2D20",
+    purpose: "Laravel is my preferred PHP framework for elegant web applications with expressive syntax, robust features, and a rich ecosystem."
+  },
+  {
+    id: "golang",
+    name: "Golang",
+    icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original.svg",
+    color: "#00ADD8",
+    purpose: "I leverage Golang for building efficient, concurrent applications and microservices with its simplicity and performance benefits."
+  },
+  {
     id: "rust",
     name: "Rust",
-    icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-plain.svg",
+    icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/rust/rust-original.svg",
     color: "#DEA584",
     purpose: "I use Rust for performance-critical components and systems programming, leveraging its memory safety without garbage collection."
   },
@@ -105,6 +126,26 @@ $ npm run build
 $ next dev
 > ready - started server on 0.0.0.0:3000
 > app-dir enabled`,
+
+  php: `$ php -v
+> PHP 8.2.7 (cli)
+
+$ composer create-project
+> Installing dependencies
+> Application ready!`,
+
+  laravel: `$ composer create-project laravel/laravel example-app
+> Application ready!
+
+$ php artisan serve
+> Starting Laravel development server: http://127.0.0.1:8000`,
+
+  golang: `$ go version
+> go version go1.20.4 linux/amd64
+
+$ go run main.go
+> Starting server at :8080
+> Connected to database`,
 
   rust: `$ cargo new rust_project
 > Created binary package
@@ -520,14 +561,14 @@ const Skills: React.FC = () => {
               </div>
               
               <div className="px-3 py-1 rounded-md bg-secondary/30 font-mono text-xs">
-                techStack.app
+                skills.tsx
               </div>
             </div>
             
             {/* macOS-style layout with sidebar and content */}
             <div className="flex flex-col md:flex-row">
               {/* Left sidebar for tech selection - similar to macOS Settings */}
-              <div className="md:w-56 lg:w-64 border-r border-gray-800 md:max-h-[70vh] overflow-y-auto">
+              <div className="md:w-56 lg:w-64 border-r border-gray-800">
                 <div className="p-2">
                   {techStack.map((tech) => (
                     <button
