@@ -420,24 +420,6 @@ const Hero = forwardRef<HTMLElement>((props, ref) => {
           </motion.p>
           
           <motion.div 
-            ref={techCardsRef}
-            className="flex flex-wrap gap-2.5 md:gap-3.5 mb-8 md:mb-10 justify-center md:justify-start"
-          >
-            {["TypeScript", "React", "Next.js", "Node.js", "Tailwind"].map((tech, i) => (
-              <div 
-                key={tech} 
-                className="tech-icon p-2 md:p-2.5 bg-secondary/30 backdrop-blur-sm rounded-lg border border-border/30"
-                style={{ 
-                  opacity: 1,
-                  visibility: "visible" 
-                }}
-              >
-                <span className="text-xs md:text-sm font-medium">{tech}</span>
-              </div>
-            ))}
-          </motion.div>
-          
-          <motion.div 
             initial={{ y: isMobile ? 10 : 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: isMobile ? 0.3 : 0.5, delay: isMobile ? 0.4 : 0.7 }}
@@ -456,9 +438,9 @@ const Hero = forwardRef<HTMLElement>((props, ref) => {
             </Button>
             
             <Button variant="outline" size={isMobile ? "default" : "lg"} asChild className="px-5 py-2.5">
-              <Link href="#contact">
+              <Link href="#projects">
                 <ExternalLink className="mr-2.5 h-4 w-4 md:h-5 md:w-5" />
-                Contact Me
+                View My Work
               </Link>
             </Button>
           </motion.div>

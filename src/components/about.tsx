@@ -653,26 +653,6 @@ const About = forwardRef<HTMLElement>((props, ref) => {
               </p>
                 {currentCursorElement === "gen-p4" && isTyping && <TypingCursor />}
               </div>
-              
-              {/* Tech badges - simpler animation */}
-              {sectionInView && (
-                <motion.div 
-                  className="flex flex-wrap gap-2 pt-4"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: isMobile ? 0.5 : 2.5, duration: 0.5 }}
-                  style={{ willChange: 'opacity' }}
-                >
-                  {["JavaScript", "TypeScript", "React", "Node.js", "Next.js"].map((tech) => (
-                    <div 
-                      key={tech}
-                      className="px-3 py-1.5 rounded-full text-xs border border-border bg-secondary/20 backdrop-blur-sm text-muted-foreground"
-                    >
-                      {tech}
-                    </div>
-                  ))}
-                </motion.div>
-              )}
             </div>
           </div>
         </div>

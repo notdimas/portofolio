@@ -26,6 +26,16 @@ interface Project {
 const projects: Project[] = [
   {
     id: "project1",
+    title: "MiiStore",
+    description: "A freelance project developed for a client — MiiStore is a fully automated game top-up website built with Laravel 11, featuring a full admin dashboard, integrated payment gateway, item stock management, and a user-friendly interface to streamline digital product transactions.",
+    image: "/images/projects/project3_project.png",
+    technologies: ["PHP", "Laravel", "MySQL", "JavaScript", "Payment Gateway"],
+    status: ["private", "live"],
+    type: "Freelance Project",
+    live: "https://miistore.id"
+  },  
+  {
+    id: "project2",
     title: "Personal Portfolio",
     description: "A nice-looking personal portfolio website, built using Next.js and TypeScript for a fast and scalable architecture. It features smooth page transitions and an overall interactive user experience. Designed to reflect both professionalism and aesthetics in one platform.",
     image: "/images/projects/project1_project.png",
@@ -35,16 +45,6 @@ const projects: Project[] = [
     link: "https://github.com/notdimas/portofolio",
     live: ""
   },
-  {
-    id: "project2",
-    title: "MiiStore",
-    description: "A freelance project developed for a client — MiiStore is a fully automated game top-up website built with Laravel 11, featuring a full admin dashboard, integrated payment gateway, item stock management, and a user-friendly interface to streamline digital product transactions.",
-    image: "/images/projects/project3_project.png",
-    technologies: ["PHP", "Laravel", "MySQL", "JavaScript", "Payment Gateway"],
-    status: ["private", "live"],
-    type: "Freelance Project",
-    live: "https://miistore.id"
-  },  
   {
     id: "project3",
     title: "SimpleNotepad",
